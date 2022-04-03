@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
+import logging
 
+logging.basicConfig(filename='log_output.txt',
+                            filemode='w',
+                            format='%(levelname)s %(message)s',
+                            level=logging.DEBUG)
 def main():
+    logging.info("*************************************************")
+    logging.info("Running NQS Calculator")
+    logging.info("*************************************************")
     input_data_path = "prospect_rtn_data.csv"
     df = pd.read_csv(input_data_path)
     df.loc[:,'Location'] = np.where(df['Home Team'] == df['Team'] , 'Home', 'Away')
@@ -34,14 +42,20 @@ def main():
         (athlete_results.at[index, 'BB'] == 0) & \
         (athlete_results.at[index, 'FX'] == 0) & \
         (athlete_results.at[index, 'AA'] == 0):
-            # print("{} has no events with an NQS".format(row[1]))
+            logging.info("{} has no events with an NQS. Dropping from results table".format(row[1]))
             athletes_no_nqs.append(row[0])
-    print("{} athletes with no NQS. Dropping these rows".format(len(athletes_no_nqs)))
     for athlete_id in athletes_no_nqs:
         athlete_results = athlete_results.drop(athlete_results[athlete_results['Gymnast ID'] == athlete_id].index)
 
     meets = calculate_meet_scores(df, meets)
     team_results = calculate_team_nqs_events(meets)
+    logging.info("*************************************************")
+    logging.info("Team Results (full results in output file)")
+    logging.info(team_results)
+    logging.info("*************************************************")
+    logging.info("Individual Results (full results in output file)")
+    logging.info(athlete_results)
+    logging.info("*************************************************")
     team_results.to_csv('output/team_results.csv')
     athlete_results.to_csv('output/athlete_results.csv')
     df.to_csv('output/modified_input.csv')
@@ -88,14 +102,13 @@ def calculate_team_nqs_events(meets):
 def calculate_team_nqs(meets, school, event):
     df = meets.loc[(meets['Team'] == school)]
     if (df.shape[0] < 6):
-        # print("Not enough scores to calculate NQS")
+        logging.info("Not enough scores to calculate NQS for {} on {}".format(school, event))
         return 0
 
     df = df.sort_values(by=['Location', event], ascending=[True, False])
-    # df = df.sort_values(by=['Location'], ascending=[True])
 
     if df.loc[(df['Location'] == 'Away')].shape[0] < 3:
-        # print("Not enough away scores to calculate NQS")
+        logging.info("Not enough away scores to calculate NQS for {} on {}".format(school, event))
         return 0
     # Get top 3 away scores and re-sort dataframe
     nqs = df.head(3)
@@ -138,18 +151,16 @@ def calculate_meet_scores(df, meets):
 
 def calculate_athlete(df, athlete_name, event):
     # Make sure there are enough scores
-    # print("Calculating {} NQS for {}".format(athlete_name, event))
     df_athlete = pd.DataFrame()
     df_athlete = df.loc[(df['Name'] == athlete_name) & (df['Event'] == event)]
     if (df_athlete.shape[0] < 6):
-        # print("Not enough scores to calculate NQS")
+        logging.info("Not enough scores to calculate NQS for {} on {}".format(athlete_name, event))
         return 0
 
     df_athlete = df_athlete.sort_values(by=['Location', 'Score'], ascending=[True, False])
     # Make sure there are enough away scores
-    # df_away = df.loc[(df['Location'] == 'Away')]
     if df_athlete.loc[(df_athlete['Location'] == 'Away')].shape[0] < 3:
-        # print("Not enough away scores to calculate NQS")
+        logging.info("Not enough away scores to calculate NQS for {} on {}".format(athlete_name, event))
         return 0
 
     # Get top 3 away scores and re-sort dataframe

@@ -1,11 +1,27 @@
----------------------------------
-							Team
----------------------------------
-|	Team	| VT	|	UB	|	BB	|	FX	|
+------------------------------------------------------------------
+												Modified Input
+------------------------------------------------------------------
+
+| Meet ID | Gymnast ID | Name | Team | Event | Score | Location |
+
+This table represents the input data where:
+	1. Location column added with the value 'Home' if Team matches Home Team, away otherwise
+	2. Drops the columns 'Meet Date', 'Away Team(s)' and 'Home Team' as they are not used further in calculations
 
 
----------------------------------
-							Individual
----------------------------------
+------------------------------------------------------------------
+														Team
+------------------------------------------------------------------
 
-|	Name	| Team	|	VT	|	UB	|	BB	|	FX	|
+| Team | VT | UB | BB | FX | Team Score |
+
+This has one row per school, and shows the team's calculated NQS per event as well as the overall team NQS
+
+
+------------------------------------------------------------------
+													Individual
+------------------------------------------------------------------
+
+| Gymnast ID | Name | Team | VT | UB | BB | FX | AA |
+
+This table contains NQS for each athlete on all events and all around. Athletes are not listed in this table if they do not have an NQS on any event. An NQS of 0 means that the gymnast does not have enough scores to calculate an NQS.
